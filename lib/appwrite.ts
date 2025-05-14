@@ -10,7 +10,6 @@ export const config = {
 };
 
 export const client = new Client();
-
 client
   .setEndpoint(config.endpoint!)
   .setProject(config.projectId!)
@@ -18,34 +17,33 @@ client
 
 export const avatar = new Avatars(client);
 export const account = new Account(client);
+// export const databases = new Databases(client);
+// export const storage = new Storage(client);
 
 export async function login() {
   try {
     const redirectUri = Linking.createURL("/");
+
     const response = await account.createOAuth2Token(
       OAuthProvider.Google,
       redirectUri
     );
-
-    if (!response) throw new Error("Failed to login");
+    if (!response) throw new Error("Create OAuth2 token failed");
 
     const browserResult = await openAuthSessionAsync(
       response.toString(),
       redirectUri
     );
-
-    if (browserResult.type === "success") throw new Error("Failed to login");
+    if (browserResult.type !== "success")
+      throw new Error("Create OAuth2 token failed");
 
     const url = new URL(browserResult.url);
-
     const secret = url.searchParams.get("secret")?.toString();
     const userId = url.searchParams.get("userId")?.toString();
+    if (!secret || !userId) throw new Error("Create OAuth2 token failed");
 
-    if (!secret || !userId) throw new Error("Failed to login");
-
-    const session = await account.createSession(secret, userId);
-
-    if (!session) throw new Error("Failed to create a session");
+    const session = await account.createSession(userId, secret);
+    if (!session) throw new Error("Failed to create session");
 
     return true;
   } catch (error) {
@@ -56,29 +54,47 @@ export async function login() {
 
 export async function logout() {
   try {
-    await account.deleteSession("current");
-
-    return true;
+    const result = await account.deleteSession("current");
+    return result;
   } catch (error) {
     console.error(error);
     return false;
   }
 }
 
+// export async function getCurrentUser() {
+//   try {
+//     const response = await account.get();
+
+//     if (response.$id) {
+//       const userAvatar = avatar.getInitials(response.name);
+
+//       return {
+//         ...response,
+//         avatar: userAvatar.toString(),
+//       };
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     return null;
+//   }
+// }
+
 export async function getCurrentUser() {
   try {
-    const response = await account.get();
-
-    if (response.$id) {
-      const userAvatar = avatar.getInitials(response.name);
+    const result = await account.get();
+    if (result.$id) {
+      const userAvatar = avatar.getInitials(result.name);
 
       return {
-        ...response,
+        ...result,
         avatar: userAvatar.toString(),
       };
     }
+
+    return null;
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return null;
   }
 }

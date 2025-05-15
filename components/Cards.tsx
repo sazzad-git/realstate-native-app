@@ -41,7 +41,7 @@ export const FeaturedCard = ({
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-xl text-white font-rubik-extrabold">
-            {price}
+            ${price}
           </Text>
 
           <Image source={icons.heart} className="size-5" />
@@ -75,7 +75,7 @@ export const Card = ({
 
         <View className="flex flex-row justify-between items-center mt-2">
           <Text className="text-base text-primary-300 font-rubik-bold">
-            {price}
+            ${price}
           </Text>
 
           <Image
